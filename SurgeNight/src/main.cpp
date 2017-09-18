@@ -165,22 +165,21 @@ void mainloop(GLFWwindow *window)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(NULL));
     glEnableVertexAttribArray(0);
 
-    Texture2D texture1("img/cai.jpg");
+    Texture2D texture1("img/container2_specular.png");
     Texture2D texture2("img/container2.png", 1);
     boxShader.use();
     boxShader.setValue("utex1", texture1.getIndex());
     boxShader.setValue("utex2", texture2.getIndex());
-    boxShader.setValue("lightPos", glm::vec3(1.2f, 1.0f, 2.0f));
-    boxShader.setValue("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-    boxShader.setValue("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-    boxShader.setValue("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    boxShader.setValue("lightPos", glm::vec3(1.2f, 0.5f, 3.0f));
+    boxShader.setValue("material.diffuse", 1);
+    boxShader.setValue("material.specular", 0);
     boxShader.setValue("material.shininess", 32.0f);
 
     lightShader.use();
     lightShader.setValue("utex1", texture1.getIndex());
     lightShader.setValue("utex2", texture2.getIndex());
     glm::mat4 tmp;
-    tmp = glm::translate(tmp, glm::vec3(1.2f, 1.0f, 2.0f));
+    tmp = glm::translate(tmp, glm::vec3(1.2f, 0.5f, 3.0f));
     tmp = glm::scale(tmp, glm::vec3(0.2f));
     lightShader.setValue("model", tmp);
 
@@ -209,10 +208,11 @@ void mainloop(GLFWwindow *window)
         // float delta = sin(glfwGetTime()) / 2.0 + 0.5;
         // glm::vec3 lightClr(delta * 0.6f, delta * 0.8f, delta);
         glm::vec3 lightClr(
-            sin(glfwGetTime() * 2.0f),
-            sin(glfwGetTime() * 0.7f),
-            sin(glfwGetTime() * 1.3f)
-        );
+            1.0f);
+        //     sin(glfwGetTime() * 2.0f),
+        //     sin(glfwGetTime() * 0.7f),
+        //     sin(glfwGetTime() * 1.3f)
+        // );
         lightShader.setValue("clr", lightClr);
         glBindVertexArray(lightVAO);
         // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
