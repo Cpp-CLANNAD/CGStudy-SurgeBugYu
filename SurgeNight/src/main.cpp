@@ -166,12 +166,15 @@ void mainloop(GLFWwindow *window)
     glEnableVertexAttribArray(0);
 
     Texture2D texture1("img/cai.jpg");
-    Texture2D texture2("img/huaji.png", 1);
+    Texture2D texture2("img/container2.png", 1);
     boxShader.use();
     boxShader.setValue("utex1", texture1.getIndex());
     boxShader.setValue("utex2", texture2.getIndex());
-    boxShader.setValue("light", glm::vec3(1.0f));
     boxShader.setValue("lightPos", glm::vec3(1.2f, 1.0f, 2.0f));
+    boxShader.setValue("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+    boxShader.setValue("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+    boxShader.setValue("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    boxShader.setValue("material.shininess", 32.0f);
 
     lightShader.use();
     lightShader.setValue("utex1", texture1.getIndex());
@@ -185,8 +188,12 @@ void mainloop(GLFWwindow *window)
         glm::vec3(0.0f, 0.0f, -1.0f),
         glm::vec3(1.0f, 0.0f, -1.0f),
         glm::vec3(1.0f, 1.0f, -1.0f),
+        glm::vec3(0.0f, 1.0f, -1.0f),
+        glm::vec3(-1.0f, 1.0f, -1.0f),
+        glm::vec3(-1.0f, -1.0f, -1.0f),
+        glm::vec3(1.0f, -1.0f, -1.0f),
+        glm::vec3(-1.0f, 0.0f, -1.0f),
         glm::vec3(0.0f, -1.0f, -1.0f),
-        glm::vec3(-1.0f, 1.0f, -1.0f)
     };
 
     const float radius = 10.0f;
@@ -199,6 +206,14 @@ void mainloop(GLFWwindow *window)
         lightShader.use();
         lightShader.setValue("projection", projection);
         camera.useIn(lightShader);
+        // float delta = sin(glfwGetTime()) / 2.0 + 0.5;
+        // glm::vec3 lightClr(delta * 0.6f, delta * 0.8f, delta);
+        glm::vec3 lightClr(
+            sin(glfwGetTime() * 2.0f),
+            sin(glfwGetTime() * 0.7f),
+            sin(glfwGetTime() * 1.3f)
+        );
+        lightShader.setValue("clr", lightClr);
         glBindVertexArray(lightVAO);
         // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -209,6 +224,9 @@ void mainloop(GLFWwindow *window)
         // camera.setPos(glm::vec3(camX, 0.0f, camZ));
         camera.useIn(boxShader);
         boxShader.setValue("viewPos", camera.getPos());
+        boxShader.setValue("light.ambient", lightClr * 0.2f);
+        boxShader.setValue("light.diffuse", lightClr * 0.5f);
+        boxShader.setValue("light.specular", lightClr * 1.0f);
 
         texture1.use();
         texture2.use();
