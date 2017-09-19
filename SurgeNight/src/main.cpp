@@ -4,10 +4,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "stb_image.h"
-#include "ShaderProgram.h"
-#include "Texture2D.h"
-#include "Camera.h"
-#include "Light.h"
+#include "SNCGraphics/ShaderProgram.h"
+#include "SNCGraphics/Model/Texture2D.h"
+#include "SNCGraphics/Camera.h"
+#include "SNCGraphics/Lighting/Light.h"
 #include <iostream>
 
 using namespace std;
@@ -209,13 +209,16 @@ void mainloop(GLFWwindow *window)
         // float camX = sin(glfwGetTime()) * radius, camZ = cos(glfwGetTime()) * radius;
         // camera.setPos(glm::vec3(camX, 0.0f, camZ));
         camera.useIn(boxShader);
-        boxShader.setValue("light.direction", light.getDirection());
+        boxShader.setValue("light.direction", camera.getTarget());
         boxShader.setValue("light.ambient", light.getColor() * 0.2f);
         boxShader.setValue("light.diffuse", light.getColor() * 0.5f);
         boxShader.setValue("light.specular", light.getColor() * 1.0f);
+        boxShader.setValue("light.position", camera.getPos());
+        boxShader.setValue("light.cutOff", cos(glm::radians(12.5f)));
+        boxShader.setValue("light.outerCutOff", cos(glm::radians(17.5f)));
         boxShader.setValue("light.constant", 1.0f);
-        boxShader.setValue("light.linear", 0.09f);
-        boxShader.setValue("light.quadratic", 0.032f);
+        boxShader.setValue("light.linear", 0.022f);
+        boxShader.setValue("light.quadratic", 0.0019f);
 
         texture1.use();
         texture2.use();
@@ -268,7 +271,7 @@ int main()
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, processMouse);
     glfwSetScrollCallback(window, processScroll);
-    glClearColor(0.2f, 0.4f, 0.6f, 0.2f);
+    glClearColor(0.05f, 0.1f, 0.15f, 0.2f);
 
     int nrAttributes;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);

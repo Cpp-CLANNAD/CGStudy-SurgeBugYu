@@ -7,13 +7,15 @@ struct Material {
 };
 
 struct Light {
-    vec4 direction;
+    vec3 position;
+    vec3 direction;
 
-    float constant, linear, quadratic;
+    float cutOff, outerCutOff;
 
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+    float constant, linear, quadratic;
 };
 
 uniform sampler2D utex1;
@@ -35,15 +37,18 @@ void main()
     // tclr = vec4(oclr, 0.9f);
     // tclr = texture(utex2, otexcor) * vec4(oclr.xyz / 2.0f + 0.5f, 1.0f);
     vec3 norm = normalize(onor);
-    vec3 olnor, ovnor = normalize(-oPos);
-    float dis = 0.0f, attenuation = 1.0f;
-    if (light.direction.w != 1.0f)
-        olnor = normalize(-vec3(oView * light.direction));
-    else {
-        olnor = normalize(vec3(oView * light.direction) - oPos);
-        dis = length(vec3(oView * light.direction) - oPos);
-        attenuation = 1.0 / (light.constant + light.linear * dis + light.quadratic * dis * dis);
-    }
+    vec3 olnor = normalize(-(oView * vec4(light.direction, 0.0f)).xyz), ovnor = normalize(-oPos), oltnor = vec3((oView * vec4(light.position, 1.0f)).xyz) - oPos;
+
+    float dis = 0.0f;
+    dis = length(oltnor);
+    oltnor = normalize(oltnor);
+
+    float theta = dot(oltnor, olnor);
+    float epsilon = light.cutOff - light.outerCutOff;
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0f, 1.0f);
+
+    float attenuation = 1.0f;
+    attenuation = 1.0 / (light.constant + light.linear * dis + light.quadratic * (dis * dis));
 
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, otexcor));
 
@@ -55,7 +60,9 @@ void main()
 
     ambient *= attenuation;
     diffuse *= attenuation;
+    diffuse *= intensity;
     specular *= attenuation;
+    specular *= intensity;
 
     // vec4 tmp = mix(texture(utex1, otexcor), texture(utex2, vec2(otexcor)), 0.5);
     vec4 tmp = vec4(1.0f, 0.5f, 0.31f, 1.0f);
