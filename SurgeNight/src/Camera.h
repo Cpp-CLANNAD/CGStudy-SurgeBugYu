@@ -27,8 +27,9 @@ public:
         glUniformMatrix4fv(shader.getUniform(name), 1, GL_FALSE, glm::value_ptr(m_view));
     };
 
-    glm::vec3 getPos() const { return m_pos; }
-    glm::vec3 getTarget() const { return m_tar; }
+    const glm::vec3 getPos() const { return m_pos; }
+    const glm::vec3 getTarget() const { return m_tar; }
+    const glm::mat4 getViewMatrix() const { return m_view; }
     bool isLookAting() const { return m_lookAt; }
 
 private:

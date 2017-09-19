@@ -6,6 +6,7 @@ GLStudy {
 	src/stb_image.c
 	src/Texture2D.cpp
 	src/Camera.cpp
+	src/Light.cpp
 }
 GLStudy.path build/
 compile cxx g++

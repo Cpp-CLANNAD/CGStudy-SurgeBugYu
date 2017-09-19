@@ -7,6 +7,7 @@
 #include "ShaderProgram.h"
 #include "Texture2D.h"
 #include "Camera.h"
+#include "Light.h"
 #include <iostream>
 
 using namespace std;
@@ -137,7 +138,8 @@ void mainloop(GLFWwindow *window)
         3, 6, 7
     };
 
-    ShaderProgram boxShader("shader/box"), lightShader("shader/light");
+    ShaderProgram boxShader("shader/box");
+    Light light;
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -157,42 +159,29 @@ void mainloop(GLFWwindow *window)
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    unsigned int lightVAO;
-    glGenVertexArrays(1, &lightVAO);
-    glBindVertexArray(lightVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(NULL));
-    glEnableVertexAttribArray(0);
+    light.setPosition(glm::vec3(1.2f, 0.5f, 3.0f));
+    // light.setDirection(glm::vec3(-1.2f, -0.5f, -3.0f));
 
     Texture2D texture1("img/container2_specular.png");
     Texture2D texture2("img/container2.png", 1);
     boxShader.use();
     boxShader.setValue("utex1", texture1.getIndex());
     boxShader.setValue("utex2", texture2.getIndex());
-    boxShader.setValue("lightPos", glm::vec3(1.2f, 0.5f, 3.0f));
     boxShader.setValue("material.diffuse", 1);
     boxShader.setValue("material.specular", 0);
     boxShader.setValue("material.shininess", 32.0f);
 
-    lightShader.use();
-    lightShader.setValue("utex1", texture1.getIndex());
-    lightShader.setValue("utex2", texture2.getIndex());
-    glm::mat4 tmp;
-    tmp = glm::translate(tmp, glm::vec3(1.2f, 0.5f, 3.0f));
-    tmp = glm::scale(tmp, glm::vec3(0.2f));
-    lightShader.setValue("model", tmp);
-
     glm::vec3 cubes[] = {
-        glm::vec3(0.0f, 0.0f, -1.0f),
-        glm::vec3(1.0f, 0.0f, -1.0f),
-        glm::vec3(1.0f, 1.0f, -1.0f),
-        glm::vec3(0.0f, 1.0f, -1.0f),
-        glm::vec3(-1.0f, 1.0f, -1.0f),
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-        glm::vec3(1.0f, -1.0f, -1.0f),
-        glm::vec3(-1.0f, 0.0f, -1.0f),
-        glm::vec3(0.0f, -1.0f, -1.0f),
+        glm::vec3( 0.0f,  0.0f,  0.0f),
+        glm::vec3( 2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f,  2.0f, -2.5f),
+        glm::vec3( 1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
     const float radius = 10.0f;
@@ -202,9 +191,8 @@ void mainloop(GLFWwindow *window)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 projection = glm::perspective(glm::radians(fov), static_cast<float>(screenWidth) / screenHeight, 0.1f, 100.0f);
-        lightShader.use();
-        lightShader.setValue("projection", projection);
-        camera.useIn(lightShader);
+        light.setProjectionMatrix(projection);
+        light.setViewMatrix(camera.getViewMatrix());
         // float delta = sin(glfwGetTime()) / 2.0 + 0.5;
         // glm::vec3 lightClr(delta * 0.6f, delta * 0.8f, delta);
         glm::vec3 lightClr(
@@ -213,31 +201,36 @@ void mainloop(GLFWwindow *window)
         //     sin(glfwGetTime() * 0.7f),
         //     sin(glfwGetTime() * 1.3f)
         // );
-        lightShader.setValue("clr", lightClr);
-        glBindVertexArray(lightVAO);
-        // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        light.setColor(lightClr);
+        light.paint();
 
         boxShader.use();
         boxShader.setValue("projection", projection);
         // float camX = sin(glfwGetTime()) * radius, camZ = cos(glfwGetTime()) * radius;
         // camera.setPos(glm::vec3(camX, 0.0f, camZ));
         camera.useIn(boxShader);
-        boxShader.setValue("viewPos", camera.getPos());
-        boxShader.setValue("light.ambient", lightClr * 0.2f);
-        boxShader.setValue("light.diffuse", lightClr * 0.5f);
-        boxShader.setValue("light.specular", lightClr * 1.0f);
+        boxShader.setValue("light.direction", light.getDirection());
+        boxShader.setValue("light.ambient", light.getColor() * 0.2f);
+        boxShader.setValue("light.diffuse", light.getColor() * 0.5f);
+        boxShader.setValue("light.specular", light.getColor() * 1.0f);
+        boxShader.setValue("light.constant", 1.0f);
+        boxShader.setValue("light.linear", 0.09f);
+        boxShader.setValue("light.quadratic", 0.032f);
 
         texture1.use();
         texture2.use();
         glBindVertexArray(VAO);
+        unsigned int index = 0;
         for (auto &i : cubes) {
             glm::mat4 model;
             model = glm::translate(model, i);
+            float angle = 20.0f * index;
             // model = glm::rotate(model, static_cast<float>(glfwGetTime()), glm::vec3(0.5f, 1.0f, 0.1f));
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             boxShader.setValue("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            ++index;
         }
 
         glfwSwapBuffers(window);
