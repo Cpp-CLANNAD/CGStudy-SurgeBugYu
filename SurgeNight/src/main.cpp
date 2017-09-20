@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "stb_image.h"
 #include "SNCGraphics/ShaderProgram.h"
-#include "SNCGraphics/Model/Texture2D.h"
+#include "SNCGraphics/Model.h"
 #include "SNCGraphics/Camera.h"
 #include "SNCGraphics/Lighting/Light.h"
 #include <iostream>

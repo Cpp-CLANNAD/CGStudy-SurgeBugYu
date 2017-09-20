@@ -8,8 +8,10 @@
 namespace SurgeNight
 {
 
-Texture2D::Texture2D(const std::string &filename, const int index, const bool reverse) : m_id(0), m_index(index)
+Texture2D::Texture2D(const std::string &filename, const int index, const int type, const bool reverse) : m_id(0), m_index(index), m_type(type)
 {
+    if (m_type < TEXTURE_DIFFUSE || m_type > TEXTURE_TEXTURE)
+        m_type = TEXTURE_TEXTURE;
     glGenTextures(1, &m_id);
     reloadFile(filename, index, reverse);
 }
@@ -22,6 +24,7 @@ Texture2D::~Texture2D()
 bool Texture2D::reloadFile(const std::string &filename, const int index, const bool reverse)
 {
     m_index = index;
+    m_filename = "";
     glBindTexture(GL_TEXTURE_2D, m_id);
     unsigned char *data = stbi_load(filename.c_str(), &m_width, &m_height, &m_clrChanls, 0);
     if (NULL == data) {
@@ -41,6 +44,7 @@ bool Texture2D::reloadFile(const std::string &filename, const int index, const b
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
+    m_filename = filename;
     return true;
 }
 

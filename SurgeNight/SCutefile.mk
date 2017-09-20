@@ -8,6 +8,7 @@ GLStudy {
 	src/SNCGraphics/Lighting/Light.cpp
 	src/SNCGraphics/Model/Texture2D.cpp
 	src/SNCGraphics/Model/Model.cpp
+	src/SNCGraphics/Model/Mesh.cpp
 }
 GLStudy.path build/
 compile cxx g++
