@@ -46,16 +46,19 @@ Mesh::~Mesh()
 }
 
 void Mesh::registerTexture(ShaderProgram &shader,
-                        const std::string &texture,
+                        const std::string &ambient,
                         const std::string &diffuse,
                         const std::string &specular,
                         const std::string &normal,
                         const std::string &height)
 {
-    unsigned int itex = 0, idiff = 0, ispec = 0, inor = 0, iheig = 0;
+    unsigned int iambi = 0, idiff = 0, ispec = 0, inor = 0, iheig = 0;
     std::string name;
     for (auto &i : m_textures) {
         switch (i->getType()) {
+            case Texture2D::TEXTURE_AMBIENT:
+                name = ambient + std::to_string(iambi++);
+                break;
             case Texture2D::TEXTURE_DIFFUSE:
                 name = diffuse + std::to_string(idiff++);
                 break;
@@ -74,6 +77,7 @@ void Mesh::registerTexture(ShaderProgram &shader,
         shader.setValue(name, i->getId());
         i->use();
     }
+    // std::cout << iambi << " " << idiff << " " << ispec << " " << inor << " " << iheig << std::endl;
 }
 
 void Mesh::paint()

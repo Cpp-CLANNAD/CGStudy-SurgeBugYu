@@ -25,7 +25,7 @@ public:
     std::vector<std::shared_ptr<Texture2D>>& getTextures() { return m_textures; }
 
     void registerTexture(ShaderProgram &shader,
-                         const std::string &texture = "texture",
+                         const std::string &ambient = "texture_ambient",
                          const std::string &diffuse = "texture_diffuse",
                          const std::string &specular = "texture_specular",
                          const std::string &normal = "texture_normal",

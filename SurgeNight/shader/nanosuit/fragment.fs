@@ -1,9 +1,14 @@
-#ifndef SN_LIGHT_H
-#define SN_LIGHT_H
+#version 330 core
 
-/*
+struct TextureMaterial {
+    sampler2D ambient, diffuse, specular;
+    float shininess;
+};
 
-// relative GLSL struct Light
+struct CustomMaterial {
+    vec3 ambient, diffuse, specular;
+    float shininess;
+};
 
 struct LightSpot {
     vec3 position, direction;
@@ -21,7 +26,18 @@ struct LightNormal {
     float constant, linear, quadratic;
 };
 
-// relative GLSL light calc funtions
+uniform sampler2D texture_diffuse0;
+uniform sampler2D texture_specular0;
+uniform LightSpot light;
+uniform TextureMaterial material;
+
+in vec3 oclr;
+in vec2 otexcor;
+in vec3 onor;
+in vec3 oPos;
+in mat4 oView;
+
+out vec4 tclr;
 
 vec3 calcNormalLight(LightNormal tlight, CustomMaterial tmat, vec3 normalDir, vec3 vw2ptDir, vec3 lt2ptDir, vec3 lightDir)
 {
@@ -65,55 +81,20 @@ vec3 calcSpotLight(LightSpot tlight, CustomMaterial tmat, vec3 normalDir, vec3 v
     return (ambient + diffuse + specular) * attenuation * intensity;
 }
 
-*/
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <string>
-#include "../ShaderProgram.h"
-
-namespace SurgeNight
+void main()
 {
+    //tclr = vec4(0.6f, 0.8f, 1.0f, 0.9f);
+    // tclr = vec4(oclr, 0.9f);
+    // tclr = texture(utex2, otexcor) * vec4(oclr.xyz / 2.0f + 0.5f, 1.0f);
+    vec3 ltDir = (oView * vec4(light.direction, 0.0f)).xyz, vwDir = -oPos, lpDir = oPos - vec3((oView * vec4(light.position, 1.0f)).xyz);
 
-class Light
-{
-public:
-    enum {
-        LIGHT_DIRECTIONAL,
-        LIGHT_POINT,
-        LIGHT_SPOTLIGHT
-    };
-
-    Light(const glm::vec3 &pos = glm::vec3(0.0f), const glm::vec4 &dir = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f), const glm::vec3 &color = glm::vec3(1.0f));
-    ~Light();
-
-    void setColor(const glm::vec3 &color) { m_color = color; }
-    void setPosition(const glm::vec3 &pos) { m_pos = pos; m_dir = glm::vec4(pos, 1.0f); }
-    void setDirection(const glm::vec3 &dir) { m_dir = glm::vec4(dir, 0.0f); }
-    void setAttenuation(const float constant, const float linear, const float quadratic) { m_constant = constant; m_linear = linear; m_quadratic = quadratic; }
-    // void setType();
-
-    const glm::vec3 getColor() const { return m_color; }
-    const glm::vec4 getPosition() const { return glm::vec4(m_pos, 1.0f); }
-    const glm::vec4 getDirection() const { return m_dir; }
-    bool isType(const int type) const {
-        if (LIGHT_DIRECTIONAL == type) return m_dir.w == 0.0f;
-        if (LIGHT_POINT == type) return m_dir.w == 1.0f;
-        if (LIGHT_SPOTLIGHT == type) return m_dir.w == 0.0f;
-        return false;
-    }
-
-    void useIn(ShaderProgram &shader, const std::string &name = "light");
-
-private:
-    void updateModelMatrix();
-
-    glm::vec3 m_pos, m_color;
-    glm::vec4 m_dir;
-    float m_constant, m_linear, m_quadratic;
-};
-
+    // vec4 tmp = mix(texture(utex1, otexcor), texture(utex2, vec2(otexcor)), 0.5);
+    // vec4 tmp = vec4(1.0f, 0.5f, 0.31f, 1.0f);
+    CustomMaterial mat;
+    mat.ambient = vec3(texture(texture_diffuse0, otexcor));
+    mat.diffuse = vec3(texture(texture_diffuse0, otexcor));
+    mat.specular = vec3(texture(texture_specular0, otexcor));
+    mat.shininess = material.shininess;
+    tclr = texture(texture_diffuse0, otexcor);
+    // tclr = vec4(calcSpotLight(light, mat, onor, vwDir, lpDir, ltDir), 1.0f);// * vec4(oclr.xyz / 2.0f + 0.5f, 1.0f);
 }
-
-#endif // SN_LIGHT_H

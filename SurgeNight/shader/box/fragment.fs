@@ -1,27 +1,35 @@
 #version 330 core
 
-struct Material {
-    sampler2D diffuse;
-    sampler2D specular;
+struct TextureMaterial {
+    sampler2D ambient, diffuse, specular;
     float shininess;
 };
 
-struct Light {
-    vec3 position;
-    vec3 direction;
+struct CustomMaterial {
+    vec3 ambient, diffuse, specular;
+    float shininess;
+};
 
+struct LightSpot {
+    vec3 position, direction;
     float cutOff, outerCutOff;
 
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    vec3 ambient, diffuse, specular;
+    float constant, linear, quadratic;
+};
+
+struct LightNormal {
+    vec4 position;
+    float cutOff, outerCutOff;
+
+    vec3 ambient, diffuse, specular;
     float constant, linear, quadratic;
 };
 
 uniform sampler2D utex1;
 uniform sampler2D utex2;
-uniform Light light;
-uniform Material material;
+uniform LightSpot light;
+uniform TextureMaterial material;
 
 in vec3 oclr;
 in vec2 otexcor;
@@ -31,40 +39,61 @@ in mat4 oView;
 
 out vec4 tclr;
 
+vec3 calcNormalLight(LightNormal tlight, CustomMaterial tmat, vec3 normalDir, vec3 vw2ptDir, vec3 lt2ptDir, vec3 lightDir)
+{
+    vec3 tnnor = normalize(normalDir), tvnor = normalize(-vw2ptDir), tlpnor = normalize(-lt2ptDir), tlnor = normalize(lightDir);
+    float dis = length(lt2ptDir);
+
+    vec3 ambient = tlight.ambient * tmat.ambient;
+
+    float diff = max(dot(tnnor, tlnor), 0.0f);
+    vec3 diffuse = tlight.diffuse * diff * tmat.diffuse;
+
+    float spec = pow(max(dot(tvnor, reflect(-tlnor, tnnor)), 0.0f), tmat.shininess);
+    vec3 specular = tlight.specular * spec * tmat.specular;
+
+    float attenuation = 1.0f;
+    attenuation = 1.0 / (tlight.constant + tlight.linear * dis + tlight.quadratic * (dis * dis));
+
+    return (ambient + diffuse + specular) * attenuation;
+}
+
+vec3 calcSpotLight(LightSpot tlight, CustomMaterial tmat, vec3 normalDir, vec3 vw2ptDir, vec3 lt2ptDir, vec3 lightDir)
+{
+    vec3 tnnor = normalize(normalDir), tvnor = normalize(-vw2ptDir), tlpnor = normalize(-lt2ptDir), tlnor = normalize(lightDir);
+    float dis = length(lt2ptDir);
+
+    vec3 ambient = tlight.ambient * tmat.ambient;
+
+    float diff = max(dot(tnnor, tlnor), 0.0f);
+    vec3 diffuse = tlight.diffuse * diff * tmat.diffuse;
+
+    float spec = pow(max(dot(tvnor, reflect(-tlnor, tnnor)), 0.0f), tmat.shininess);
+    vec3 specular = tlight.specular * spec * tmat.specular;
+
+    float attenuation = 1.0f;
+    attenuation = 1.0 / (tlight.constant + tlight.linear * dis + tlight.quadratic * (dis * dis));
+
+    float theta = dot(tlpnor, -tlnor);
+    float epsilon = tlight.cutOff - tlight.outerCutOff;
+    float intensity = clamp((theta - tlight.outerCutOff) / epsilon, 0.0f, 1.0f);
+
+    return (ambient + diffuse + specular) * attenuation * intensity;
+}
+
 void main()
 {
     //tclr = vec4(0.6f, 0.8f, 1.0f, 0.9f);
     // tclr = vec4(oclr, 0.9f);
     // tclr = texture(utex2, otexcor) * vec4(oclr.xyz / 2.0f + 0.5f, 1.0f);
-    vec3 norm = normalize(onor);
-    vec3 olnor = normalize(-(oView * vec4(light.direction, 0.0f)).xyz), ovnor = normalize(-oPos), oltnor = vec3((oView * vec4(light.position, 1.0f)).xyz) - oPos;
-
-    float dis = 0.0f;
-    dis = length(oltnor);
-    oltnor = normalize(oltnor);
-
-    float theta = dot(oltnor, olnor);
-    float epsilon = light.cutOff - light.outerCutOff;
-    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0f, 1.0f);
-
-    float attenuation = 1.0f;
-    attenuation = 1.0 / (light.constant + light.linear * dis + light.quadratic * (dis * dis));
-
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, otexcor));
-
-    float diff = max(dot(onor, olnor), 0.0f);
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, otexcor));
-
-    float spec = pow(max(dot(ovnor, reflect(-olnor, onor)), 0.0f), material.shininess);
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, otexcor));
-
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    diffuse *= intensity;
-    specular *= attenuation;
-    specular *= intensity;
+    vec3 ltDir = (oView * vec4(light.direction, 0.0f)).xyz, vwDir = -oPos, lpDir = oPos - vec3((oView * vec4(light.position, 1.0f)).xyz);
 
     // vec4 tmp = mix(texture(utex1, otexcor), texture(utex2, vec2(otexcor)), 0.5);
-    vec4 tmp = vec4(1.0f, 0.5f, 0.31f, 1.0f);
-    tclr = vec4(ambient + diffuse + specular, 1.0f);// * vec4(oclr.xyz / 2.0f + 0.5f, 1.0f);
+    // vec4 tmp = vec4(1.0f, 0.5f, 0.31f, 1.0f);
+    CustomMaterial mat;
+    mat.ambient = vec3(texture(material.ambient, otexcor));
+    mat.diffuse = vec3(texture(material.diffuse, otexcor));
+    mat.specular = vec3(texture(material.specular, otexcor));
+    mat.shininess = material.shininess;
+    tclr = vec4(calcSpotLight(light, mat, onor, vwDir, lpDir, ltDir), 1.0f);// * vec4(oclr.xyz / 2.0f + 0.5f, 1.0f);
 }

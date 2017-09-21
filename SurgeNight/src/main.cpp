@@ -138,7 +138,7 @@ void mainloop(GLFWwindow *window)
         3, 6, 7
     };
 
-    ShaderProgram boxShader("shader/box"), nanoShader("shader/light");
+    ShaderProgram boxShader("shader/box"), nanoShader("shader/nanosuit");
     SurgeNight::Model nanoModel("model/nanosuit/nanosuit.obj");
     Light light;
 
@@ -160,6 +160,7 @@ void mainloop(GLFWwindow *window)
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
+    light.setAttenuation(1.0f, 0.022f, 0.0019f);
     light.setPosition(glm::vec3(1.2f, 0.5f, 3.0f));
     // light.setDirection(glm::vec3(-1.2f, -0.5f, -3.0f));
 
@@ -168,6 +169,7 @@ void mainloop(GLFWwindow *window)
     boxShader.use();
     boxShader.setValue("utex1", texture1.getIndex());
     boxShader.setValue("utex2", texture2.getIndex());
+    boxShader.setValue("material.ambient", 1);
     boxShader.setValue("material.diffuse", 1);
     boxShader.setValue("material.specular", 0);
     boxShader.setValue("material.shininess", 32.0f);
@@ -192,8 +194,6 @@ void mainloop(GLFWwindow *window)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 projection = glm::perspective(glm::radians(fov), static_cast<float>(screenWidth) / screenHeight, 0.1f, 100.0f);
-        light.setProjectionMatrix(projection);
-        light.setViewMatrix(camera.getViewMatrix());
         // float delta = sin(glfwGetTime()) / 2.0 + 0.5;
         // glm::vec3 lightClr(delta * 0.6f, delta * 0.8f, delta);
         glm::vec3 lightClr(
@@ -203,23 +203,15 @@ void mainloop(GLFWwindow *window)
         //     sin(glfwGetTime() * 1.3f)
         // );
         light.setColor(lightClr);
-        light.paint();
 
         boxShader.use();
         boxShader.setValue("projection", projection);
-        // float camX = sin(glfwGetTime()) * radius, camZ = cos(glfwGetTime()) * radius;
-        // camera.setPos(glm::vec3(camX, 0.0f, camZ));
         camera.useIn(boxShader);
         boxShader.setValue("light.direction", camera.getTarget());
-        boxShader.setValue("light.ambient", light.getColor() * 0.2f);
-        boxShader.setValue("light.diffuse", light.getColor() * 0.5f);
-        boxShader.setValue("light.specular", light.getColor() * 1.0f);
         boxShader.setValue("light.position", camera.getPos());
         boxShader.setValue("light.cutOff", cos(glm::radians(12.5f)));
         boxShader.setValue("light.outerCutOff", cos(glm::radians(17.5f)));
-        boxShader.setValue("light.constant", 1.0f);
-        boxShader.setValue("light.linear", 0.022f);
-        boxShader.setValue("light.quadratic", 0.0019f);
+        light.useIn(boxShader);
 
         texture1.use();
         texture2.use();
@@ -237,13 +229,17 @@ void mainloop(GLFWwindow *window)
             ++index;
         }
         nanoShader.use();
-            glm::mat4 model;
-            model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
-            model = glm::scale(model, glm::vec3(0.2f));
+        glm::mat4 model;
+        model = glm::translate(model, glm::vec3(2.0f, -1.75f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.2f));
         nanoShader.setValue("projection", projection);
         nanoShader.setValue("model", model);
         camera.useIn(nanoShader);
-        nanoShader.setValue("clr", glm::vec3(1.0f));
+        nanoShader.setValue("light.direction", camera.getTarget());
+        nanoShader.setValue("light.position", camera.getPos());
+        nanoShader.setValue("light.cutOff", cos(glm::radians(20.0f)));
+        nanoShader.setValue("light.outerCutOff", cos(glm::radians(40.0f)));
+        light.useIn(nanoShader);
         nanoModel.paint(nanoShader);
         // nanoModel.m_meshes[1].paint();
 
