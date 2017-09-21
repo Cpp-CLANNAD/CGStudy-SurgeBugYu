@@ -12,12 +12,12 @@ namespace SurgeNight
         enum {
             TEXTURE_DIFFUSE,
             TEXTURE_SPECULAR,
+            TEXTURE_AMBIENT,
             TEXTURE_NORMAL,
-            TEXTURE_HEIGHT,
-            TEXTURE_TEXTURE
+            TEXTURE_HEIGHT
         };
 
-        Texture2D(const std::string &filename, const int index = 0, const int type = TEXTURE_TEXTURE, const bool reverse = false);
+        Texture2D(const std::string &filename, const int index = 0, const int type = TEXTURE_DIFFUSE, const bool reverse = false);
         ~Texture2D();
 
         void use() {

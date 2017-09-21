@@ -138,7 +138,8 @@ void mainloop(GLFWwindow *window)
         3, 6, 7
     };
 
-    ShaderProgram boxShader("shader/box");
+    ShaderProgram boxShader("shader/box"), nanoShader("shader/light");
+    SurgeNight::Model nanoModel("model/nanosuit/nanosuit.obj");
     Light light;
 
     glGenVertexArrays(1, &VAO);
@@ -235,6 +236,17 @@ void mainloop(GLFWwindow *window)
             // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
             ++index;
         }
+        nanoShader.use();
+            glm::mat4 model;
+            model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+            model = glm::scale(model, glm::vec3(0.2f));
+        nanoShader.setValue("projection", projection);
+        nanoShader.setValue("model", model);
+        camera.useIn(nanoShader);
+        nanoShader.setValue("clr", glm::vec3(1.0f));
+        nanoModel.paint(nanoShader);
+        // nanoModel.m_meshes[1].paint();
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -272,10 +284,6 @@ int main()
     glfwSetCursorPosCallback(window, processMouse);
     glfwSetScrollCallback(window, processScroll);
     glClearColor(0.05f, 0.1f, 0.15f, 0.2f);
-
-    int nrAttributes;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
-    cout << "Maximum nr: " << nrAttributes << endl;
 
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);

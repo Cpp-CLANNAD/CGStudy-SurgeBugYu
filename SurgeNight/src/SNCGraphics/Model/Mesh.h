@@ -17,6 +17,9 @@ public:
     Mesh(const std::vector<Vertex> &vertexs, const std::vector<unsigned int> &indexs, std::vector<std::shared_ptr<Texture2D>> &textures);
     ~Mesh();
 
+    Mesh(const Mesh &mesh);
+    Mesh& operator=(const Mesh &mesh);
+
     std::vector<Vertex>& getVertexs() { return m_vertexs; }
     std::vector<unsigned int>& getIndexes() { return m_vertexsIndex; }
     std::vector<std::shared_ptr<Texture2D>>& getTextures() { return m_textures; }

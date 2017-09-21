@@ -10,8 +10,8 @@ namespace SurgeNight
 
 Texture2D::Texture2D(const std::string &filename, const int index, const int type, const bool reverse) : m_id(0), m_index(index), m_type(type)
 {
-    if (m_type < TEXTURE_DIFFUSE || m_type > TEXTURE_TEXTURE)
-        m_type = TEXTURE_TEXTURE;
+    if (m_type < TEXTURE_DIFFUSE || m_type > TEXTURE_HEIGHT)
+        m_type = TEXTURE_DIFFUSE;
     glGenTextures(1, &m_id);
     reloadFile(filename, index, reverse);
 }

@@ -19,11 +19,11 @@ public:
 
     void paint(ShaderProgram &shader);
 
+    std::vector<Mesh> m_meshes;
 private:
     void load(const std::string &filename);
     void loadNode(const aiNode *node, const aiScene *scene, const std::string &path);
 
-    std::vector<Mesh> m_meshes;
     std::vector<std::shared_ptr<Texture2D>> m_textures;
 };
 
