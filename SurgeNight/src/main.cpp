@@ -161,6 +161,7 @@ void mainloop(GLFWwindow *window)
     glEnableVertexAttribArray(2);
 
     light.setAttenuation(1.0f, 0.022f, 0.0019f);
+    light.setEnvironment(0.2f, 0.8f);
     light.setPosition(glm::vec3(1.2f, 0.5f, 3.0f));
     // light.setDirection(glm::vec3(-1.2f, -0.5f, -3.0f));
 

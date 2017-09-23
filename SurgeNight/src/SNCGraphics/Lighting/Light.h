@@ -92,6 +92,7 @@ public:
     void setPosition(const glm::vec3 &pos) { m_pos = pos; m_dir = glm::vec4(pos, 1.0f); }
     void setDirection(const glm::vec3 &dir) { m_dir = glm::vec4(dir, 0.0f); }
     void setAttenuation(const float constant, const float linear, const float quadratic) { m_constant = constant; m_linear = linear; m_quadratic = quadratic; }
+    void setEnvironment(const float ambient, const float diffuse = 0.5f, const float specular = 1.0f) { m_ambient = ambient; m_diffuse = diffuse; m_specular = specular; }
     // void setType();
 
     const glm::vec3 getColor() const { return m_color; }
@@ -112,6 +113,7 @@ private:
     glm::vec3 m_pos, m_color;
     glm::vec4 m_dir;
     float m_constant, m_linear, m_quadratic;
+    float m_ambient, m_diffuse, m_specular;
 };
 
 }

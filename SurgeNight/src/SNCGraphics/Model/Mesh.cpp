@@ -52,7 +52,7 @@ void Mesh::registerTexture(ShaderProgram &shader,
                         const std::string &normal,
                         const std::string &height)
 {
-    unsigned int iambi = 0, idiff = 0, ispec = 0, inor = 0, iheig = 0;
+    unsigned int iambi = 0, idiff = 0, ispec = 0, inor = 0, iheig = 0, itex = 0;
     std::string name;
     for (auto &i : m_textures) {
         switch (i->getType()) {
@@ -74,8 +74,8 @@ void Mesh::registerTexture(ShaderProgram &shader,
             default:
                 continue;
         }
-        shader.setValue(name, i->getId());
-        i->use();
+        shader.setValue(name, itex);
+        i->use(itex++);
     }
     // std::cout << iambi << " " << idiff << " " << ispec << " " << inor << " " << iheig << std::endl;
 }

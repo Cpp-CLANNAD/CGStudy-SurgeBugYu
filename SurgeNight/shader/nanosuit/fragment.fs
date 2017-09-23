@@ -95,6 +95,6 @@ void main()
     mat.diffuse = vec3(texture(texture_diffuse0, otexcor));
     mat.specular = vec3(texture(texture_specular0, otexcor));
     mat.shininess = material.shininess;
-    tclr = texture(texture_diffuse0, otexcor);
-    // tclr = vec4(calcSpotLight(light, mat, onor, vwDir, lpDir, ltDir), 1.0f);// * vec4(oclr.xyz / 2.0f + 0.5f, 1.0f);
+    // tclr = texture(texture_diffuse0, otexcor);
+    tclr = vec4(calcSpotLight(light, mat, onor, vwDir, lpDir, ltDir), 1.0f);// * vec4(oclr.xyz / 2.0f + 0.5f, 1.0f);
 }

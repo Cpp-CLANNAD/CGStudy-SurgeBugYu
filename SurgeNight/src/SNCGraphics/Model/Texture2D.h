@@ -20,9 +20,10 @@ namespace SurgeNight
         Texture2D(const std::string &filename, const int index = 0, const int type = TEXTURE_DIFFUSE, const bool reverse = false);
         ~Texture2D();
 
-        void use() {
-                glActiveTexture(GL_TEXTURE0 + m_index);
-                glBindTexture(GL_TEXTURE_2D, m_id);
+        void use(const int index = -1) {
+            int idx = (index == -1 ? m_index : index);
+            glActiveTexture(GL_TEXTURE0 + idx);
+            glBindTexture(GL_TEXTURE_2D, m_id);
         }
         bool reloadFile(const std::string &filename, const int index = 0, const bool reverse = false);
         bool isVaild() const { return 0 != m_id; }
