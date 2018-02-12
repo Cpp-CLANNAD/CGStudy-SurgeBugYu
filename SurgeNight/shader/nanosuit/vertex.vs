@@ -17,7 +17,6 @@ out mat4 oView;
 void main()
 {
     // gl_Position = vec4(aPos, 1.0);
-    // gl_Position = trans * vec4(aPos, 1.0);
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     oclr = aPos;
     otexcor = vec2(aTex.xy);

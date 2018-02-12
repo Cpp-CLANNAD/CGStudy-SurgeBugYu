@@ -13,7 +13,7 @@ GLStudy {
 GLStudy.path build/
 compile cxx g++
 compile c g++
-compile cxxflags -std=c++14 -Wall -Wextra -I/mingw64/include -Iinclude -I/mingw64/include/mesa -L/mingw64/lib
-compile cflags -std=c++14 -Wall -Wextra -I/mingw64/include -Iinclude -I/mingw64/include/mesa -L/mingw64/lib
+compile cxxflags -std=c++14 -Wall -Wextra -Isrc -Iinclude
+compile cflags -std=c++14 -Wall -Wextra -Isrc -Iinclude
 compile cxxlibs glfw3 OSMesa assimp
 compile clibs glfw3 OSMesa assimp

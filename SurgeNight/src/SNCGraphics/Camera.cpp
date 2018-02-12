@@ -13,24 +13,30 @@ Camera::~Camera()
 
 }
 
-void Camera::move(const float x, const float y, const float z)
+void Camera::move(const float right, const float up, const float front)
 {
-    glm::vec3 front, right, up(m_up);
+    glm::vec3 frontv, rightv, upv(m_up);
     if (m_lookAt) {
-        front = glm::normalize(m_tar - m_pos);
-        right = glm::normalize(glm::cross(front, up)) * x;
-        up *= y;
-        front *= z;
+        frontv = glm::normalize(m_tar - m_pos);
+        rightv = glm::normalize(glm::cross(frontv, upv)) * right;
+        upv *= up;
+        frontv *= front;
     }
     else {
-        front = m_tar;
-        right = glm::normalize(glm::cross(front, up)) * x;
-        up *= y;
-        front *= z;
+        frontv = m_tar;
+        rightv = glm::normalize(glm::cross(frontv, upv)) * right;
+        upv *= up;
+        frontv *= front;
     }
-    m_pos += front;
-    m_pos += right;
-    m_pos += up;
+    m_pos += frontv;
+    m_pos += rightv;
+    m_pos += upv;
+    updateView();
+}
+
+void Camera::translate(const float right, const float up, const float front)
+{
+    m_pos += glm::vec3(right, up, front);
     updateView();
 }
 

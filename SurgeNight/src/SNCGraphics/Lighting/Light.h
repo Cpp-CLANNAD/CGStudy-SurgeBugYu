@@ -71,7 +71,7 @@ vec3 calcSpotLight(LightSpot tlight, CustomMaterial tmat, vec3 normalDir, vec3 v
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
-#include "../ShaderProgram.h"
+#include "SNCGraphics/ShaderProgram.h"
 
 namespace SurgeNight
 {
@@ -79,13 +79,13 @@ namespace SurgeNight
 class Light
 {
 public:
-    enum {
+    enum LightType {
         LIGHT_DIRECTIONAL,
         LIGHT_POINT,
         LIGHT_SPOTLIGHT
     };
 
-    Light(const glm::vec3 &pos = glm::vec3(0.0f), const glm::vec4 &dir = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f), const glm::vec3 &color = glm::vec3(1.0f));
+    explicit Light(const glm::vec3 &pos = glm::vec3(0.0f), const glm::vec4 &dir = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f), const glm::vec3 &color = glm::vec3(1.0f));
     ~Light();
 
     void setColor(const glm::vec3 &color) { m_color = color; }

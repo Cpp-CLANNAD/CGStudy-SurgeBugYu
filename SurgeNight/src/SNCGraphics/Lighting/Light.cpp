@@ -20,9 +20,9 @@ void Light::useIn(ShaderProgram &shader, const std::string &name)
     shader.setValue(name + ".ambient", m_color * m_ambient);
     shader.setValue(name + ".diffuse", m_color * m_diffuse);
     shader.setValue(name + ".spacular", m_color * m_specular);
-    shader.setValue("light.constant", m_constant);
-    shader.setValue("light.linear", m_linear);
-    shader.setValue("light.quadratic", m_quadratic);
+    shader.setValue(name + ".constant", m_constant);
+    shader.setValue(name + ".linear", m_linear);
+    shader.setValue(name + ".quadratic", m_quadratic);
 }
 
 }

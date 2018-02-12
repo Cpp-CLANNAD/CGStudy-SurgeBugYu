@@ -19,6 +19,7 @@ float screenWidth = 1366.0f, screenHeight = 768.0f, fov = 45.0f;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
+	window = window;
     glViewport(0, 0, width, height);
 }
 
@@ -38,10 +39,11 @@ void processInput(GLFWwindow *window)
 
 float lastMousePos[] = { 683.0f, 384.0f };
 float offsetMouse[] = { 0.0f, 0.0f };
-float pitch = 0.0f, yaw = -90.0f, roll = 0.0f, sensity = 0.05f;
+float pitch = 0.0f, yaw = 0.0f, roll = 0.0f, sensity = 0.05f;
 
 void processMouse(GLFWwindow *window, double x, double y)
 {
+	window = window;
     static bool first = true;
     if (first) {
         lastMousePos[0] = x;
@@ -57,13 +59,33 @@ void processMouse(GLFWwindow *window, double x, double y)
     yaw += offsetMouse[0];
     pitch += offsetMouse[1];
     if (pitch > 89.0f)
-        pitch = 89.0f;
+        pitch =89.0f;
     if (pitch < -89.0f)
         pitch = -89.0f;
-    float fx = cos(glm::radians(pitch)) * cos(glm::radians(yaw)),
-          fy = sin(glm::radians(pitch)),
-          fz = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-    camera.lookTo(glm::vec3(fx, fy, fz));
+    // float fx = cos(glm::radians(pitch)) * cos(glm::radians(yaw)),
+    //       fy = sin(glm::radians(pitch)),
+    //       fz = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+    // camera.lookTo(glm::vec3(fx, fy, fz));
+	glm::vec4 qur1(0, -sin(glm::radians(yaw)), 0, cos(glm::radians(yaw))), qur2(sin(glm::radians(pitch)), 0, 0, cos(glm::radians(pitch)));
+	glm::vec4 qur(
+		qur1.y * qur2.z - qur1.z * qur2.y + qur1.w * qur2.x + qur1.x * qur2.w,
+		qur1.z * qur2.x - qur1.x * qur2.z + qur1.w * qur2.y + qur1.y * qur2.w,
+		qur1.x * qur2.y - qur1.y * qur2.x + qur1.w * qur2.z + qur1.z * qur2.w,
+		qur1.w * qur2.w - qur1.x * qur2.x - qur1.y * qur2.y - qur1.z * qur2.z
+	), cqur(-qur.x, -qur.y, -qur.z, qur.w), front(0, 0, -1.0f, 0);
+	qur = glm::vec4(
+		qur.y * front.z - qur.z * front.y + qur.w * front.x + qur.x * front.w,
+		qur.z * front.x - qur.x * front.z + qur.w * front.y + qur.y * front.w,
+		qur.x * front.y - qur.y * front.x + qur.w * front.z + qur.z * front.w,
+		qur.w * front.w - qur.x * front.x - qur.y * front.y - qur.z * front.z
+	);
+	qur = glm::vec4(
+		qur.y * cqur.z - qur.z * cqur.y + qur.w * cqur.x + qur.x * cqur.w,
+		qur.z * cqur.x - qur.x * cqur.z + qur.w * cqur.y + qur.y * cqur.w,
+		qur.x * cqur.y - qur.y * cqur.x + qur.w * cqur.z + qur.z * cqur.w,
+		qur.w * cqur.w - qur.x * cqur.x - qur.y * cqur.y - qur.z * cqur.z
+	);
+    camera.lookTo(glm::vec3(qur.x, qur.y, qur.z));
 }
 
 void processScroll(GLFWwindow *window, double offx, double offy)
@@ -75,6 +97,17 @@ void processScroll(GLFWwindow *window, double offx, double offy)
         fov = 1.0f;
     if (fov >= 45.0f)
         fov = 45.0f;
+}
+
+void printMat(const glm::mat4 &mat)
+{
+	cerr << "----------" << endl;
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			cerr << mat[i][j] << ' ';
+		}
+		cerr << endl;
+	}
 }
 
 void mainloop(GLFWwindow *window)
@@ -143,27 +176,29 @@ void mainloop(GLFWwindow *window)
     Light light;
 
     glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
     glGenBuffers(1, &VBO);
+    // glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cors), cors, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(NULL));
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cors), cors, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
     light.setAttenuation(1.0f, 0.022f, 0.0019f);
     light.setEnvironment(0.2f, 0.8f);
     light.setPosition(glm::vec3(1.2f, 0.5f, 3.0f));
-    // light.setDirection(glm::vec3(-1.2f, -0.5f, -3.0f));
+    light.setDirection(glm::vec3(-1.2f, -0.5f, -3.0f));
 
     Texture2D texture1("img/container2_specular.png");
     Texture2D texture2("img/container2.png", 1);
@@ -197,13 +232,13 @@ void mainloop(GLFWwindow *window)
         glm::mat4 projection = glm::perspective(glm::radians(fov), static_cast<float>(screenWidth) / screenHeight, 0.1f, 100.0f);
         // float delta = sin(glfwGetTime()) / 2.0 + 0.5;
         // glm::vec3 lightClr(delta * 0.6f, delta * 0.8f, delta);
-        glm::vec3 lightClr(
-            1.0f);
+        // glm::vec3 lightClr(
+        //     1.0f);
         //     sin(glfwGetTime() * 2.0f),
         //     sin(glfwGetTime() * 0.7f),
         //     sin(glfwGetTime() * 1.3f)
         // );
-        light.setColor(lightClr);
+        // light.setColor(lightClr);
 
         boxShader.use();
         boxShader.setValue("projection", projection);
@@ -219,12 +254,13 @@ void mainloop(GLFWwindow *window)
         glBindVertexArray(VAO);
         unsigned int index = 0;
         for (auto &i : cubes) {
-            glm::mat4 model;
+            glm::mat4 model(0.1f);
             model = glm::translate(model, i);
             float angle = 20.0f * index;
             // model = glm::rotate(model, static_cast<float>(glfwGetTime()), glm::vec3(0.5f, 1.0f, 0.1f));
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             boxShader.setValue("model", model);
+            glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
             // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
             ++index;
@@ -242,7 +278,7 @@ void mainloop(GLFWwindow *window)
         nanoShader.setValue("light.outerCutOff", cos(glm::radians(40.0f)));
         light.useIn(nanoShader);
         nanoModel.paint(nanoShader);
-        // nanoModel.m_meshes[1].paint();
+        nanoModel.m_meshes[1].paint();
 
 
         glfwSwapBuffers(window);
@@ -251,7 +287,7 @@ void mainloop(GLFWwindow *window)
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    // glDeleteBuffers(1, &EBO);
 }
 
 int main()

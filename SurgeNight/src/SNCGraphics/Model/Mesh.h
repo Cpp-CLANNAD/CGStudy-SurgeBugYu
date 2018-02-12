@@ -1,11 +1,11 @@
 #ifndef SN_MESH_H
 #define SN_MESH_H
 
-#include <vector>
+#include "SNCGraphics/Model/Texture2D.h"
+#include "SNCGraphics/Model/Vertex.h"
+#include "SNCGraphics/ShaderProgram.h"
 #include <memory>
-#include "Vertex.h"
-#include "Texture2D.h"
-#include "../ShaderProgram.h"
+#include <vector>
 
 namespace SurgeNight
 {

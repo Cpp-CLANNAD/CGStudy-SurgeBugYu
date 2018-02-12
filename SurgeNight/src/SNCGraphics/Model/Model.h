@@ -1,12 +1,12 @@
 #ifndef SN_MODEL_H
 #define SN_MODEL_H
 
-#include "Texture2D.h"
-#include "Mesh.h"
-#include "../ShaderProgram.h"
+#include "SNCGraphics/Model/Mesh.h"
+#include "SNCGraphics/Model/Texture2D.h"
+#include "SNCGraphics/ShaderProgram.h"
+#include "assimp/scene.h"
 #include <memory>
 #include <vector>
-#include "assimp/scene.h"
 
 namespace SurgeNight
 {
@@ -14,7 +14,7 @@ namespace SurgeNight
 class Model
 {
 public:
-    Model(const std::string &filename);
+    explicit Model(const std::string &filename);
     ~Model();
 
     void paint(ShaderProgram &shader);

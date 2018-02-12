@@ -2,8 +2,8 @@
 #define SN_SHADER_PROGRAM_H
 
 #include "glad/glad.h"
-#include <string>
 #include <glm/glm.hpp>
+#include <string>
 
 namespace SurgeNight
 {
